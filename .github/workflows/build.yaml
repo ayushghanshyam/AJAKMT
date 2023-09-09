@@ -16,10 +16,15 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y aidl
 
+      # Create the necessary directories
+      - name: Create Buildozer directory structure
+        run: |
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/build-tools/30.0.0-rc4
+
       # Copy aidl to the specified directory
       - name: Copy aidl to Buildozer directory
         run: |
-          sudo cp `which aidl` /home/aca/.buildozer/android/platform/android-sdk/build-tools/30.0.0-rc4/aidl
+          sudo cp `which aidl` $HOME/.buildozer/android/platform/android-sdk/build-tools/30.0.0-rc4/aidl
 
       # Cache the Buildozer global directory
       - name: Cache Buildozer global directory
