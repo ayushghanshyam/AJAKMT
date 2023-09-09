@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -10,24 +10,31 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # used to cache dependencies with a timeout
-      - name: Get Date
-        id: get-date
+      # Update package repositories and install aidl
+      - name: Update packages and install aidl
         run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
+          sudo apt-get update -y
+          sudo apt-get install -y aidl
 
+      # Copy aidl to the specified directory
+      - name: Copy aidl to Buildozer directory
+        run: |
+          sudo cp `which aidl` /home/aca/.buildozer/android/platform/android-sdk/build-tools/30.0.0-rc4/aidl
+
+      # Cache the Buildozer global directory
       - name: Cache Buildozer global directory
         uses: actions/cache@v2
         with:
           path: .buildozer_global
           key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
 
+      # Cache the Buildozer directory with a timestamp
       - uses: actions/cache@v2
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
+      # Build the Android application with Buildozer
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
@@ -35,6 +42,7 @@ jobs:
           command: buildozer android debug
           buildozer_version: master
 
+      # Upload the built artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
